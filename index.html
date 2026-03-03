@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+    <!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
@@ -8,62 +8,89 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;800&display=swap');
         body { font-family: 'Pretendard', sans-serif; letter-spacing: -0.02em; }
-        .tab-active { background-color: #4f46e5 !important; color: white !important; shadow: 0 4px 14px 0 rgba(79, 70, 229, 0.39); }
-        .news-card:hover { transform: translateY(-5px); transition: all 0.3s ease; }
-        ::-webkit-scrollbar { display: none; }
+        /* 가로 스크롤바 숨기기 */
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .active-main { background-color: #4f46e5 !important; color: white !important; }
+        .active-sub { border-color: #4f46e5 !important; color: #4f46e5 !important; font-weight: bold; }
+        .news-card { transition: all 0.2s ease-in-out; }
     </style>
 </head>
-<body class="bg-[#f8fafc]">
+<body class="bg-[#f1f5f9]">
 
-    <header class="bg-white/70 backdrop-blur-xl sticky top-0 z-50 border-b border-slate-100">
-        <div class="container mx-auto px-5 h-16 flex items-center justify-between">
-            <h1 class="text-xl font-extrabold text-slate-900 tracking-tight cursor-pointer" onclick="location.reload()">
+    <header class="bg-white/80 backdrop-blur-md sticky top-0 z-50 border-b border-slate-200">
+        <div class="container mx-auto px-5 h-14 flex items-center justify-between">
+            <h1 class="text-lg font-black text-slate-900 tracking-tighter" onclick="location.reload()">
                 <span class="text-indigo-600">11반</span>전용과학뉴스
             </h1>
-            <div class="flex items-center gap-2">
-                <span class="relative flex h-2 w-2">
-                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                    <span class="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
-                </span>
-                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Live Now</span>
-            </div>
+            <span class="text-[10px] font-bold text-green-500 animate-pulse uppercase">● LIVE</span>
         </div>
     </header>
 
-    <nav class="bg-white border-b border-slate-100 sticky top-16 z-40 overflow-x-auto">
-        <div class="container mx-auto px-5 py-3 flex gap-3">
-            <button onclick="loadGoogleNews('과학', this)" class="category-btn tab-active px-5 py-2 text-sm font-bold bg-slate-100 text-slate-600 rounded-full transition-all">전체</button>
-            <button onclick="loadGoogleNews('우주 항공 천문학', this)" class="category-btn px-5 py-2 text-sm font-bold bg-slate-100 text-slate-600 rounded-full transition-all">우주/천문</button>
-            <button onclick="loadGoogleNews('IT 인공지능 로봇', this)" class="category-btn px-5 py-2 text-sm font-bold bg-slate-100 text-slate-600 rounded-full transition-all">IT/AI</button>
-            <button onclick="loadGoogleNews('생명과학 유전공학 의학', this)" class="category-btn px-5 py-2 text-sm font-bold bg-slate-100 text-slate-600 rounded-full transition-all">바이오/의학</button>
-            <button onclick="loadGoogleNews('기후변화 신재생에너지 환경', this)" class="category-btn px-5 py-2 text-sm font-bold bg-slate-100 text-slate-600 rounded-full transition-all">환경/에너지</button>
+    <nav class="bg-white border-b border-slate-100 sticky top-14 z-40 overflow-x-auto hide-scrollbar">
+        <div class="container mx-auto px-4 py-2 flex gap-2">
+            <button onclick="showSub('physics', this)" class="main-btn px-6 py-2 text-sm font-bold rounded-xl bg-slate-100 text-slate-600 shrink-0 transition-all active-main">물리</button>
+            <button onclick="showSub('chemistry', this)" class="main-btn px-6 py-2 text-sm font-bold rounded-xl bg-slate-100 text-slate-600 shrink-0 transition-all">화학</button>
+            <button onclick="showSub('biology', this)" class="main-btn px-6 py-2 text-sm font-bold rounded-xl bg-slate-100 text-slate-600 shrink-0 transition-all">생명</button>
+            <button onclick="showSub('earth', this)" class="main-btn px-6 py-2 text-sm font-bold rounded-xl bg-slate-100 text-slate-600 shrink-0 transition-all">지구</button>
+            <button onclick="showSub('info', this)" class="main-btn px-6 py-2 text-sm font-bold rounded-xl bg-slate-100 text-slate-600 shrink-0 transition-all">정보</button>
         </div>
     </nav>
 
-    <main class="container mx-auto px-5 py-8">
-        <div id="news-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-            <div class="col-span-full text-center py-20">
-                <p class="text-slate-400 animate-pulse">구글에서 실시간 소식을 가져오고 있습니다...</p>
+    <div class="bg-slate-50 border-b border-slate-200 sticky top-[105px] z-30 overflow-x-auto hide-scrollbar">
+        <div id="sub-category-container" class="container mx-auto px-4 py-3 flex gap-2">
             </div>
-        </div>
+    </div>
+
+    <main class="container mx-auto px-5 py-6">
+        <div id="news-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            </div>
     </main>
 
     <script>
-        // RSS를 JSON으로 변환해주는 프록시 서버 주소
+        const categories = {
+            physics: ["열역학", "통계역학", "양자역학", "입자물리학", "핵물리학", "고체물리학", "플라즈마물리학", "광학", "음향학", "유체역학", "상대성이론", "천체물리학", "우주론", "계산물리학"],
+            chemistry: ["무기화학", "유기화학", "물리화학", "분석화학", "생화학", "재료화학", "고분자화학", "전기화학", "환경화학", "이론화학"],
+            biology: ["분자생물학", "세포생물학", "유전학", "발생학", "진화생물학", "생태학", "미생물학", "신경과학", "면역학", "생명정보학"],
+            earth: ["지질학", "광물학", "암석학", "지구물리학", "기상학", "기후학", "해양학", "행성과학", "대기과학", "지구시스템과학"],
+            info: ["정보통신학", "데이터통신학", "네트워크과학", "암호학", "데이터과학", "빅데이터학", "인공지능학"]
+        };
+
         const RSS_CONVERTER = "https://api.rss2json.com/v1/api.json?rss_url=";
 
-        async function loadGoogleNews(query, btn) {
+        // 대분류 클릭 시 소분류 생성
+        function showSub(key, btn) {
+            const subContainer = document.getElementById('sub-category-container');
+            
+            // 대분류 버튼 스타일 변경
+            document.querySelectorAll('.main-btn').forEach(b => b.classList.remove('active-main'));
+            btn.classList.add('active-main');
+
+            subContainer.innerHTML = ''; // 초기화
+            categories[key].forEach(sub => {
+                const subBtn = document.createElement('button');
+                subBtn.innerText = sub;
+                subBtn.className = "sub-btn px-4 py-1.5 text-xs font-medium bg-white border border-slate-200 rounded-full shrink-0 transition-all";
+                subBtn.onclick = function() {
+                    loadNews(sub, this);
+                };
+                subContainer.appendChild(subBtn);
+            });
+
+            // 소분류 첫 번째 항목 자동 클릭
+            subContainer.firstChild.click();
+        }
+
+        // 뉴스 로드 함수
+        async function loadNews(query, btn) {
             const container = document.getElementById('news-container');
             
-            // 버튼 디자인 변경
-            if(btn) {
-                document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('tab-active'));
-                btn.classList.add('tab-active');
-            }
+            // 소분류 버튼 스타일 변경
+            document.querySelectorAll('.sub-btn').forEach(b => b.classList.remove('active-sub'));
+            btn.classList.add('active-sub');
 
-            container.innerHTML = '<div class="col-span-full text-center py-20 text-slate-400">새로운 소식을 연결 중입니다...</div>';
+            container.innerHTML = '<div class="col-span-full text-center py-20 text-slate-400">데이터를 실시간으로 연결 중...</div>';
 
-            // 구글 뉴스 RSS 주소 조합 (한국어 설정)
             const googleRssUrl = `https://news.google.com/rss/search?q=${encodeURIComponent(query)}&hl=ko&gl=KR&ceid=KR%3Ako`;
             
             try {
@@ -72,37 +99,34 @@
 
                 if (data.status === 'ok') {
                     container.innerHTML = '';
-                    data.items.forEach(item => {
-                        // 제목에서 언론사 분리 (보통 제목 마지막에 ' - 언론사명' 형식)
+                    data.items.slice(0, 12).forEach(item => {
                         const titleParts = item.title.split(' - ');
                         const pureTitle = titleParts[0];
                         const publisher = titleParts[1] || '과학 뉴스';
-                        const date = new Date(item.pubDate).toLocaleDateString('ko-KR');
 
                         const card = `
-                            <div class="news-card bg-white p-6 rounded-3xl border border-slate-100 shadow-sm flex flex-col justify-between h-full">
+                            <div class="news-card bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex flex-col justify-between">
                                 <div>
-                                    <div class="flex items-center gap-2 mb-3">
-                                        <span class="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-md uppercase">${publisher}</span>
-                                        <span class="text-[10px] text-slate-400 font-medium">${date}</span>
+                                    <div class="flex items-center gap-2 mb-2">
+                                        <span class="text-[10px] font-bold text-indigo-500 uppercase tracking-tighter">${publisher}</span>
                                     </div>
-                                    <h3 class="text-lg font-bold text-slate-900 leading-snug mb-4 break-keep">${pureTitle}</h3>
+                                    <h3 class="text-base font-bold text-slate-900 leading-snug line-clamp-2">${pureTitle}</h3>
                                 </div>
-                                <a href="${item.link}" target="_blank" class="inline-flex items-center justify-center w-full bg-slate-900 text-white text-sm font-bold py-3 rounded-2xl hover:bg-indigo-600 transition-colors">
-                                    기사 본문 읽기
-                                </a>
+                                <a href="${item.link}" target="_blank" class="mt-4 text-center py-2 bg-slate-900 text-white text-xs font-bold rounded-xl hover:bg-indigo-600 transition-colors">기사 보기</a>
                             </div>
                         `;
                         container.innerHTML += card;
                     });
                 }
-            } catch (error) {
-                container.innerHTML = '<div class="col-span-full text-center py-20 text-red-500">뉴스를 불러오지 못했습니다. 다시 시도해주세요.</div>';
+            } catch (e) {
+                container.innerHTML = '<div class="col-span-full text-center py-20">오류가 발생했습니다.</div>';
             }
         }
 
-        // 처음 페이지 접속 시 '과학' 키워드로 로딩
-        window.onload = () => loadGoogleNews('과학');
+        // 페이지 로드 시 '물리' 카테고리 먼저 보여줌
+        window.onload = () => {
+            document.querySelector('.main-btn').click();
+        };
     </script>
 </body>
 </html>
